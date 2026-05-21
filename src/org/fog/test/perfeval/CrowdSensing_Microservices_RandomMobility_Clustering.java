@@ -25,29 +25,35 @@ import org.fog.placement.MicroservicesMobilityClusteringController;
 import org.fog.placement.PlacementLogicFactory;
 import org.fog.policy.AppModuleAllocationPolicy;
 import org.fog.scheduler.StreamOperatorScheduler;
+import org.fog.utils.Config;
 import org.fog.utils.FogLinearPowerModel;
 import org.fog.utils.FogUtils;
+import org.fog.utils.MigrationDelayMonitor;
+import org.fog.utils.NetworkUsageMonitor;
 import org.fog.utils.TimeKeeper;
 import org.fog.utils.distribution.DeterministicDistribution;
 import org.json.simple.parser.ParseException;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
 /**
  * Simulation setup for Microservices Application
  * This test covers featured such as,
- * 1. creation of clusters among fog nodes using dynamic clustering
- * 2. mobility of end user devices and microservice migration
- *
- * @author Samodha Pallewatta
- */
-
-/**
+ * 1. Creation of clusters among fog nodes using dynamic clustering
+ * 2. Mobility of the end user devices and microservice migration
+ * <p>
+ * Toggle {@code isCloudOnly} to switch between fog-edge and cloud-only placement.
+ * Results are written to {@code results.csv} via a JVM shutdown hook.
+ * <p>
  * Config properties
  * SIMULATION_MODE -> static
  * PR_PROCESSING_MODE -> PERIODIC
  * ENABLE_RESOURCE_DATA_SHARING -> false (not needed as FONs placed at the highest level.
+ *
+ * @author Samodha Pallewatta
  */
 public class CrowdSensing_Microservices_RandomMobility_Clustering {
     static List<FogDevice> fogDevices = new ArrayList<FogDevice>();
@@ -60,6 +66,10 @@ public class CrowdSensing_Microservices_RandomMobility_Clustering {
     static double SENSOR_TRANSMISSION_TIME = 10;
     static int numberOfMobileUser = 1;
 
+    // When true, all modules are pinned to the cloud. When false (default),
+    // only the database stays in the cloud and the rest runs at the fog edge.
+    static boolean isCloudOnly = false;
+
     // if random mobility generator for users is True, new random dataset will be created for each user
     static boolean randomMobility_generator = false; // To use random datasets
     static boolean renewDataset = false; // To overwrite existing random datasets
@@ -70,6 +80,11 @@ public class CrowdSensing_Microservices_RandomMobility_Clustering {
     static List<Pair<Double, Double>> qosValues = new ArrayList<>();
 
     public static void main(String[] args) {
+        // Accept --cloud-only=true/false --users=N to drive experiments from a shell script without recompiling between runs.
+        for (String arg : args) {
+            if (arg.startsWith("--cloud-only=")) isCloudOnly = Boolean.parseBoolean(arg.split("=")[1]);
+            if (arg.startsWith("--users=")) numberOfMobileUser = Integer.parseInt(arg.split("=")[1]);
+        }
 
         try {
 
@@ -90,6 +105,11 @@ public class CrowdSensing_Microservices_RandomMobility_Clustering {
             locator = new LocationHandler(dataObject);
 
             String datasetReference = References.dataset_reference;
+
+            // The standard dataset only contains data for a single user.
+            // Switch to the random dataset automatically for multi-user runs.
+            if (numberOfMobileUser > 1)
+                randomMobility_generator = true;
 
             if (randomMobility_generator) {
                 datasetReference = References.dataset_random;
@@ -134,6 +154,13 @@ public class CrowdSensing_Microservices_RandomMobility_Clustering {
 
             TimeKeeper.getInstance().setSimulationStartTime(Calendar.getInstance().getTimeInMillis());
 
+            // The controller calls System.exit(0) when the simulation ends, so
+            // startSimulation() never returns. A shutdown hook is the only way to
+            // run export code after the simulation without touching controller code.
+            final int scale = numberOfMobileUser;
+            Runtime.getRuntime().addShutdownHook(new Thread(
+                    () -> exportResultsToCsv("CrowdSensing", isCloudOnly ? "Cloud" : "Fog", scale)));
+
             CloudSim.startSimulation();
 
             CloudSim.stopSimulation();
@@ -142,9 +169,72 @@ public class CrowdSensing_Microservices_RandomMobility_Clustering {
         } catch (Exception e) {
             e.printStackTrace();
             Log.printLine("Unwanted errors happen");
+            System.exit(1);
         }
     }
 
+
+    /**
+     * Appends one row of results to the unified {@code results_CrowdSensing.csv},
+     * creating the file with a header if it doesn't exist yet.
+     * <p>
+     * Columns: AppType, Strategy, NumMobileUsers, AvgLoopLatency(ms),
+     * NetworkUsage, TotalEnergy(W), MigrationTime(ms), CloudExecutionCost.
+     * <p>
+     * AvgLoopLatency is -1 when no AppLoops are defined (the default for this upload-only pipeline).
+     * MigrationTime captures the cumulative module-migration overhead from MigrationDelayMonitor — 0.0 for Cloud-only runs.
+     * The row is silently skipped when both NetworkUsage and TotalEnergy are zero, which
+     * indicates an initialization failure before {@code CloudSim.startSimulation()} was reached.
+     */
+    private static void exportResultsToCsv(String appType, String strategy, int numMobileUsers) {
+        double totalLatency = 0.0;
+        int loopCount = 0;
+        for (Map.Entry<Integer, Double> entry :
+                TimeKeeper.getInstance().getLoopIdToCurrentAverage().entrySet()) {
+            if (entry.getValue() != null) {
+                totalLatency += entry.getValue();
+                loopCount++;
+            }
+        }
+        double avgLatency = (loopCount > 0) ? (totalLatency / loopCount) : -1.0;
+
+        double networkUsage = NetworkUsageMonitor.getNetworkUsage() / Config.MAX_SIMULATION_TIME;
+
+        double totalEnergy = 0.0;
+        for (FogDevice fd : fogDevices)
+            totalEnergy += fd.getEnergyConsumption();
+
+        if (networkUsage == 0.0 && totalEnergy == 0.0) {
+            System.err.println("[CSV Exporter] Simulation produced no output "
+                    + "(likely an initialization failure before startSimulation). "
+                    + "Skipping CSV write to avoid a misleading zero row.");
+            return;
+        }
+
+        double migrationTime = MigrationDelayMonitor.getMigrationDelay();
+
+        double cloudCost = 0.0;
+        for (FogDevice fd : fogDevices) {
+            if ("cloud".equals(fd.getName())) {
+                cloudCost = fd.getTotalCost();
+                break;
+            }
+        }
+
+        File file = new File("results_CrowdSensing.csv");
+        boolean shouldWriteHeader = !file.exists();
+        try (FileWriter fw = new FileWriter(file, true)) {
+            if (shouldWriteHeader)
+                fw.write("AppType,Strategy,NumMobileUsers,AvgLoopLatency(ms),NetworkUsage,TotalEnergy(W),MigrationTime(ms),CloudExecutionCost\n");
+
+            fw.write(String.format("%s,%s,%d,%.4f,%.4f,%.4f,%.4f,%.4f%n",
+                    appType, strategy, numMobileUsers, avgLatency, networkUsage, totalEnergy,
+                    migrationTime, cloudCost));
+            System.out.println("[CSV Exporter] Results appended to " + file.getAbsolutePath());
+        } catch (IOException e) {
+            System.err.println("[CSV Exporter] Failed to write results.csv: " + e.getMessage());
+        }
+    }
 
     private static void createRandomMobilityDatasets(int mobilityModel, String datasetReference, boolean renewDataset) throws IOException, ParseException {
         RandomMobilityGenerator randMobilityGenerator = new RandomMobilityGenerator();
@@ -300,10 +390,10 @@ public class CrowdSensing_Microservices_RandomMobility_Clustering {
         /*
          * Adding modules (vertices) to the application model (directed graph)
          */
-        application.addAppModule("sensorModule", 10,150,100); // this transmits sensor data
-        application.addAppModule("webFE", 512, 250,200);
-        application.addAppModule("processingMservice", 512, 400,200);
-        application.addAppModule("database", 512,150,2048);
+        application.addAppModule("sensorModule", 10, 150, 100); // this transmits sensor data
+        application.addAppModule("webFE", 512, 250, 200);
+        application.addAppModule("processingMservice", 512, 400, 200);
+        application.addAppModule("database", 512, 150, 2048);
 
         /*
          * Connecting the application modules (vertices) in the application model (directed graph) with edges
@@ -320,7 +410,14 @@ public class CrowdSensing_Microservices_RandomMobility_Clustering {
         application.addTupleMapping("webFE", "M-SENSOR-OUTPUT", "RAW_DATA", new FractionalSelectivity(1.0));
         application.addTupleMapping("processingMservice", "RAW_DATA", "PROCESSED_DATA", new FractionalSelectivity(1.0));
 
-      application.setSpecialPlacementInfo("database", "cloud");
+        application.setSpecialPlacementInfo("database", "cloud");
+
+        // Cloud-only scenario: pin the remaining modules to the cloud as well.
+        if (isCloudOnly) {
+            application.setSpecialPlacementInfo("sensorModule", "cloud");
+            application.setSpecialPlacementInfo("webFE", "cloud");
+            application.setSpecialPlacementInfo("processingMservice", "cloud");
+        }
 
         return application;
     }

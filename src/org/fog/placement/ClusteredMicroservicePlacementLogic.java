@@ -218,7 +218,7 @@ public class ClusteredMicroservicePlacementLogic implements MicroservicePlacemen
             mappedMicroservices.put(placementRequest.getPlacementRequestId(), new HashMap<>(placementRequest.getPlacedMicroservices()));
 
             //special modules  - predefined cloud placements
-            Application app =  applicationInfo.get(placementRequest.getApplicationId());
+            Application app = applicationInfo.get(placementRequest.getApplicationId());
             for (String microservice : app.getSpecialPlacementInfo().keySet()) {
                 for (String deviceName : app.getSpecialPlacementInfo().get(microservice)) {
                     FogDevice device = getDeviceByName(deviceName);
@@ -319,33 +319,74 @@ public class ClusteredMicroservicePlacementLogic implements MicroservicePlacemen
                                 // a device of the cluster to identify the cluster
                                 clusterNode.put(placementRequest, deviceId);
                             } else {
-                                deviceToPlace.put(placementRequest, device.getParentId());
+                                int nextId = device.getParentId();
+                                if (nextId == -1) {
+                                    // Already at the apex device (cloud has no parent).
+                                    // Force-place remaining modules here to prevent the
+                                    // while-loop from spinning on deviceToPlace = -1 forever.
+                                    for (String ms : new ArrayList<>(toPlace.get(placementRequest))) {
+                                        if (!currentModuleMap.get(deviceId).contains(ms))
+                                            currentModuleMap.get(deviceId).add(ms);
+                                        mappedMicroservices.get(placementRequest.getPlacementRequestId()).put(ms, deviceId);
+                                        double load = Objects.requireNonNull(getModule(ms, app)).getMips();
+                                        if (!currentModuleLoadMap.get(deviceId).containsKey(ms))
+                                            currentModuleLoadMap.get(deviceId).put(ms, load);
+                                        else
+                                            currentModuleLoadMap.get(deviceId).put(ms, currentModuleLoadMap.get(deviceId).get(ms) + load);
+                                        if (!currentModuleInstanceNum.get(deviceId).containsKey(ms))
+                                            currentModuleInstanceNum.get(deviceId).put(ms, 1);
+                                        else
+                                            currentModuleInstanceNum.get(deviceId).put(ms, currentModuleInstanceNum.get(deviceId).get(ms) + 1);
+                                        getCurrentCpuLoad().put(deviceId, getCurrentCpuLoad().get(deviceId) + load);
+                                    }
+                                    toPlace.remove(placementRequest);
+                                } else
+                                    deviceToPlace.put(placementRequest, nextId);
                             }
                         }
-                        if (toPlace.get(placementRequest).isEmpty())
+                        // containsKey guard: apex force-placement may have already removed the entry
+                        if (toPlace.containsKey(placementRequest) && toPlace.get(placementRequest).isEmpty())
                             toPlace.remove(placementRequest);
                     }
                 } else {
                     if (toPlace.containsKey(placementRequest)) {
-                        int clusterDeviceId = clusterNode.get(placementRequest);
+                        Integer clusterDeviceIdBoxed = clusterNode.get(placementRequest);
+                        if (clusterDeviceIdBoxed == null) {
+                            // deviceToPlace was initialized to -1 because the mobile's parent was not yet assigned
+                            // at map-init time (race with the clustering controller for large user counts).
+                            // Re-read the parent now that the simulation has started
+                            // and the controller has connected mobiles to their gateways.
+                            int recoveredParent = Objects.requireNonNull(getDevice(placementRequest.getGatewayDeviceId())).getParentId();
+                            if (recoveredParent != -1)
+                                deviceToPlace.put(placementRequest, recoveredParent);
+                            else {
+                                // Parent still unknown — route to cloud so the apex
+                                // force-placement guard above can terminate the loop.
+                                FogDevice cloud = getDeviceByName("cloud");
+                                deviceToPlace.put(placementRequest, Objects.requireNonNull(cloud).getId());
+                            }
+                            continue;
+                        }
+                        int clusterDeviceId = clusterDeviceIdBoxed;
                         FogDevice device = getDevice(clusterDeviceId);
                         List<Integer> clusterDeviceIds = ((MicroserviceFogDevice) device).getClusterMembers();
                         List<Integer> sortedClusterDevicesActive = new ArrayList<>();
                         List<Integer> sortedClusterDevicesInactive = new ArrayList<>();
                         for (Integer id : clusterDeviceIds) {
                             //sort list from min to max
-                            if (currentModuleMap.get(id).size()>0 && sortedClusterDevicesActive.isEmpty())
+                            if (currentModuleMap.get(id).size() > 0 && sortedClusterDevicesActive.isEmpty())
                                 sortedClusterDevicesActive.add(id);
-                            else if(currentModuleMap.get(id).size()==0 && sortedClusterDevicesInactive.isEmpty())
+                            else if (currentModuleMap.get(id).size() == 0 && sortedClusterDevicesInactive.isEmpty())
                                 sortedClusterDevicesInactive.add(id);
-                            else if(currentModuleMap.get(id).size()>0){
+                            else if (currentModuleMap.get(id).size() > 0) {
                                 boolean isPlaced = false;
                                 for (int i = 0; i < sortedClusterDevicesActive.size(); i++) {
                                     double sorted = resourceAvailability.get(sortedClusterDevicesActive.get(i)).get("cpu") -
                                             getCurrentCpuLoad().get(sortedClusterDevicesActive.get(i));
                                     double current = resourceAvailability.get(id).get("cpu") -
                                             getCurrentCpuLoad().get(id);
-                                    if (sorted < current) {sortedClusterDevicesActive.add(i, id);
+                                    if (sorted < current) {
+                                        sortedClusterDevicesActive.add(i, id);
                                         isPlaced = true;
                                         break;
                                     } else {
@@ -354,15 +395,15 @@ public class ClusteredMicroservicePlacementLogic implements MicroservicePlacemen
                                 }
                                 if (!isPlaced)
                                     sortedClusterDevicesActive.add(id);
-                            }
-                            else{
+                            } else {
                                 boolean isPlaced = false;
                                 for (int i = 0; i < sortedClusterDevicesInactive.size(); i++) {
                                     double sorted = resourceAvailability.get(sortedClusterDevicesInactive.get(i)).get("cpu") -
                                             getCurrentCpuLoad().get(sortedClusterDevicesInactive.get(i));
                                     double current = resourceAvailability.get(id).get("cpu") -
                                             getCurrentCpuLoad().get(id);
-                                    if (sorted < current) {sortedClusterDevicesInactive.add(i, id);
+                                    if (sorted < current) {
+                                        sortedClusterDevicesInactive.add(i, id);
                                         isPlaced = true;
                                         break;
                                     } else {

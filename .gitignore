@@ -6,3 +6,6 @@ bin/
 out/
 *.iml
 .idea/
+
+logs/
+dataset/random*.csv
