@@ -138,8 +138,8 @@ public class DCNSFog {
      * NetworkUsage, TotalEnergy(W), CloudExecutionCost.
      * <p>
      * Loop IDs are sorted ascending (registration order):
-     * Loop1 is the motion_detector -> object_detector -> object_tracker path
-     * Loop2 is the object_tracker -> PTZ_CONTROL path.
+     * Loop1Latency = detection & tracking (motion_detector -> object_detector -> object_tracker)
+     * Loop2Latency = PTZ control (object_tracker -> PTZ_CONTROL)
      * Latency of -1.0 means no tuple completed that path within the simulation window
      * (null loop — measurement artifact).
      */

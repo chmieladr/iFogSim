@@ -1,9 +1,13 @@
 package org.fog.test.perfeval;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.cloudbus.cloudsim.Host;
 import org.cloudbus.cloudsim.Log;
@@ -30,8 +34,10 @@ import org.fog.placement.ModulePlacementEdgewards;
 import org.fog.placement.ModulePlacementMapping;
 import org.fog.policy.AppModuleAllocationPolicy;
 import org.fog.scheduler.StreamOperatorScheduler;
+import org.fog.utils.Config;
 import org.fog.utils.FogLinearPowerModel;
 import org.fog.utils.FogUtils;
+import org.fog.utils.NetworkUsageMonitor;
 import org.fog.utils.TimeKeeper;
 import org.fog.utils.distribution.DeterministicDistribution;
 
@@ -44,14 +50,20 @@ public class VRGameFog {
 	static List<FogDevice> fogDevices = new ArrayList<FogDevice>();
 	static List<Sensor> sensors = new ArrayList<Sensor>();
 	static List<Actuator> actuators = new ArrayList<Actuator>();
-	
-	static boolean CLOUD = false;
-	
+
+	private static boolean CLOUD = false;
+
 	static int numOfDepts = 2;
 	static int numOfMobilesPerDept = 5;
 	static double EEG_TRANSMISSION_TIME = 5;
-	
+
 	public static void main(String[] args) {
+		// Accept args to drive experiments from a script without recompiling between runs.
+		for (String arg : args) {
+			if (arg.startsWith("--cloud=")) CLOUD = Boolean.parseBoolean(arg.split("=")[1]);
+			if (arg.startsWith("--departments=")) numOfDepts = Integer.parseInt(arg.split("=")[1]);
+			if (arg.startsWith("--mobiles-per-dept=")) numOfMobilesPerDept = Integer.parseInt(arg.split("=")[1]);
+		}
 
 		Log.printLine("Starting VRGame...");
 
@@ -103,6 +115,15 @@ public class VRGameFog {
 
 			TimeKeeper.getInstance().setSimulationStartTime(Calendar.getInstance().getTimeInMillis());
 
+			// The controller calls System.exit(0) when the simulation ends, so
+			// startSimulation() never returns. A shutdown hook is the only way to
+			// run export code after the simulation without touching controller code.
+			final int capturedDepts = numOfDepts;
+			final int capturedMobiles = numOfMobilesPerDept;
+			Runtime.getRuntime().addShutdownHook(new Thread(
+					() -> exportResultsToCsv("VRGame", CLOUD ? "Cloud" : "Fog",
+							capturedDepts, capturedMobiles)));
+
 			CloudSim.startSimulation();
 
 			CloudSim.stopSimulation();
@@ -111,6 +132,54 @@ public class VRGameFog {
 		} catch (Exception e) {
 			e.printStackTrace();
 			Log.printLine("Unwanted errors happen");
+			System.exit(1);
+		}
+	}
+
+	/**
+	 * Appends one row of results to {@code results_VRGame.csv},
+	 * creating the file with a header if it doesn't exist yet.
+	 */
+	private static void exportResultsToCsv(String appType, String strategy,
+	                                       int numDepts, int mobilesPerDept) {
+		double totalLatency = 0.0;
+		int loopCount = 0;
+		for (Map.Entry<Integer, Double> entry :
+				TimeKeeper.getInstance().getLoopIdToCurrentAverage().entrySet()) {
+			if (entry.getValue() != null) {
+				totalLatency += entry.getValue();
+				loopCount++;
+			}
+		}
+		double avgLatency = (loopCount > 0) ? (totalLatency / loopCount) : -1.0;
+
+		double networkUsage = NetworkUsageMonitor.getNetworkUsage() / Config.MAX_SIMULATION_TIME;
+
+		double totalEnergy = 0.0;
+		for (FogDevice fd : fogDevices) {
+			totalEnergy += fd.getEnergyConsumption();
+		}
+
+		double cloudCost = 0.0;
+		for (FogDevice fd : fogDevices) {
+			if ("cloud".equals(fd.getName())) {
+				cloudCost = fd.getTotalCost();
+				break;
+			}
+		}
+
+		File file = new File("results_VRGame.csv");
+		boolean shouldWriteHeader = !file.exists();
+		try (FileWriter fw = new FileWriter(file, true)) {
+			if (shouldWriteHeader)
+				fw.write("AppType,Strategy,NumDepartments,MobilesPerDept,AvgLoopLatency(ms),NetworkUsage,TotalEnergy(W),CloudExecutionCost\n");
+
+			fw.write(String.format("%s,%s,%d,%d,%.4f,%.4f,%.4f,%.4f%n",
+					appType, strategy, numDepts, mobilesPerDept,
+					avgLatency, networkUsage, totalEnergy, cloudCost));
+			System.out.println("[CSV Exporter] Results appended to " + file.getAbsolutePath());
+		} catch (IOException e) {
+			System.err.println("[CSV Exporter] Failed to write results_VRGame.csv: " + e.getMessage());
 		}
 	}
 

@@ -1,0 +1,332 @@
+{
+  "dcns_regimes": [
+    {
+      "Regime": "Fog dominance",
+      "Config": "10x3",
+      "Strategy": "Cloud",
+      "Tracking_ms": 260.3094,
+      "PTZ_ms": 105.04,
+      "Network": 1015587.0,
+      "Energy_W": 10140804.9354
+    },
+    {
+      "Regime": "Fog dominance",
+      "Config": "10x3",
+      "Strategy": "Fog",
+      "Tracking_ms": 7.22,
+      "PTZ_ms": 3.02,
+      "Network": 86637.0,
+      "Energy_W": 10074552.1964
+    },
+    {
+      "Regime": "Partial efficiency / energy anomaly",
+      "Config": "10x5",
+      "Strategy": "Cloud",
+      "Tracking_ms": 566.5074,
+      "PTZ_ms": 105.04,
+      "Network": 1046703.0,
+      "Energy_W": 13523803.3818
+    },
+    {
+      "Regime": "Partial efficiency / energy anomaly",
+      "Config": "10x5",
+      "Strategy": "Fog",
+      "Tracking_ms": 109.5648,
+      "PTZ_ms": 105.04,
+      "Network": 234688.0,
+      "Energy_W": 14018493.3537
+    },
+    {
+      "Regime": "Critical failure",
+      "Config": "10x10",
+      "Strategy": "Cloud",
+      "Tracking_ms": 796.1587,
+      "PTZ_ms": 105.04,
+      "Network": 1124493.0,
+      "Energy_W": 21989537.0818
+    },
+    {
+      "Regime": "Critical failure",
+      "Config": "10x10",
+      "Strategy": "Fog",
+      "Tracking_ms": -1.0,
+      "PTZ_ms": -1.0,
+      "Network": 1116784.0,
+      "Energy_W": 21479228.3193
+    },
+    {
+      "Regime": "Fog degeneracy",
+      "Config": "2x25",
+      "Strategy": "Cloud",
+      "Tracking_ms": 566.5058,
+      "PTZ_ms": 105.04,
+      "Network": 1046684.6,
+      "Energy_W": 12184863.0246
+    },
+    {
+      "Regime": "Fog degeneracy",
+      "Config": "2x25",
+      "Strategy": "Fog",
+      "Tracking_ms": 566.5104,
+      "PTZ_ms": 105.04,
+      "Network": 1046684.6,
+      "Energy_W": 12196367.6818
+    }
+  ],
+  "crowd_crossover": [
+    {
+      "Users": 18,
+      "Cloud_Net": 92538.0,
+      "Fog_Net": 93909.646,
+      "Fog_vs_Cloud_pct": -1.4822516155525225
+    },
+    {
+      "Users": 20,
+      "Cloud_Net": 102820.0,
+      "Fog_Net": 102253.112,
+      "Fog_vs_Cloud_pct": 0.5513402061855731
+    },
+    {
+      "Users": 25,
+      "Cloud_Net": 128525.0,
+      "Fog_Net": 119797.726,
+      "Fog_vs_Cloud_pct": 6.790331842054079
+    },
+    {
+      "Users": 50,
+      "Cloud_Net": 256589.58,
+      "Fog_Net": 240860.978,
+      "Fog_vs_Cloud_pct": 6.129867783407255
+    },
+    {
+      "Users": 52,
+      "Cloud_Net": 265416.428,
+      "Fog_Net": 262145.158,
+      "Fog_vs_Cloud_pct": 1.232504718961864
+    }
+  ],
+  "env_fog_benefit": [
+    {
+      "Config": "1x1",
+      "Latency_reduction_pct": 99.44269903655655,
+      "Network_reduction_pct": 100.0,
+      "Energy_reduction_pct": 16.21288846903306,
+      "Fog_Network": 0.0
+    },
+    {
+      "Config": "1x2",
+      "Latency_reduction_pct": 97.02048957768653,
+      "Network_reduction_pct": 100.0,
+      "Energy_reduction_pct": 15.953343096502612,
+      "Fog_Network": 0.0
+    },
+    {
+      "Config": "2x2",
+      "Latency_reduction_pct": 96.98559994761166,
+      "Network_reduction_pct": 100.0,
+      "Energy_reduction_pct": 15.040474127185611,
+      "Fog_Network": 0.0
+    },
+    {
+      "Config": "2x4",
+      "Latency_reduction_pct": 96.79338205959478,
+      "Network_reduction_pct": 100.0,
+      "Energy_reduction_pct": 15.04078645893481,
+      "Fog_Network": 0.0
+    },
+    {
+      "Config": "3x3",
+      "Latency_reduction_pct": 96.87951123193812,
+      "Network_reduction_pct": 100.0,
+      "Energy_reduction_pct": 14.224159595724755,
+      "Fog_Network": 0.0
+    },
+    {
+      "Config": "4x4",
+      "Latency_reduction_pct": 96.78687309337329,
+      "Network_reduction_pct": 100.0,
+      "Energy_reduction_pct": 13.489816053498041,
+      "Fog_Network": 0.0
+    },
+    {
+      "Config": "5x3",
+      "Latency_reduction_pct": 96.87512430908404,
+      "Network_reduction_pct": 100.0,
+      "Energy_reduction_pct": 12.825023187845947,
+      "Fog_Network": 0.0
+    },
+    {
+      "Config": "5x5",
+      "Latency_reduction_pct": 96.69895602537675,
+      "Network_reduction_pct": 100.0,
+      "Energy_reduction_pct": 12.825709657760905,
+      "Fog_Network": 0.0
+    },
+    {
+      "Config": "6x4",
+      "Latency_reduction_pct": 96.78677956036663,
+      "Network_reduction_pct": 100.0,
+      "Energy_reduction_pct": 12.221452438192413,
+      "Fog_Network": 0.0
+    },
+    {
+      "Config": "8x3",
+      "Latency_reduction_pct": 96.87478774211954,
+      "Network_reduction_pct": 100.0,
+      "Energy_reduction_pct": 11.16441380217964,
+      "Fog_Network": 0.0
+    },
+    {
+      "Config": "8x5",
+      "Latency_reduction_pct": 96.70258257233742,
+      "Network_reduction_pct": 100.0,
+      "Energy_reduction_pct": 11.165392885065756,
+      "Fog_Network": 0.0
+    },
+    {
+      "Config": "10x4",
+      "Latency_reduction_pct": 96.79044198177486,
+      "Network_reduction_pct": 100.0,
+      "Energy_reduction_pct": 10.27119874671309,
+      "Fog_Network": 0.0
+    },
+    {
+      "Config": "10x5",
+      "Latency_reduction_pct": 96.70578336106634,
+      "Network_reduction_pct": 100.0,
+      "Energy_reduction_pct": 10.271769195303884,
+      "Fog_Network": 0.0
+    },
+    {
+      "Config": "12x4",
+      "Latency_reduction_pct": 96.79655384067705,
+      "Network_reduction_pct": 100.0,
+      "Energy_reduction_pct": 9.50538389947393,
+      "Fog_Network": 0.0
+    }
+  ],
+  "env_selectivity": [
+    {
+      "AnomalySelectivity": 0.1,
+      "Avg_latency_reduction_pct": 96.98332979567911,
+      "Avg_energy_reduction_pct": 12.872272258101033,
+      "Config_count": 14
+    },
+    {
+      "AnomalySelectivity": 1.0,
+      "Avg_latency_reduction_pct": 97.0099688813974,
+      "Avg_energy_reduction_pct": 12.872272258101033,
+      "Config_count": 14
+    }
+  ],
+  "vrgame_scale": [
+    {
+      "Scale": 1,
+      "NumDepartments": 1,
+      "MobilesPerDept": 1,
+      "Cloud_latency_ms": 228.0172,
+      "Fog_latency_ms": 20.3483,
+      "Latency_reduction_pct": 91.07598023307014,
+      "Energy_reduction_pct": -0.10889383568128677
+    },
+    {
+      "Scale": 2,
+      "NumDepartments": 1,
+      "MobilesPerDept": 2,
+      "Cloud_latency_ms": 230.0532,
+      "Fog_latency_ms": 22.1699,
+      "Latency_reduction_pct": 90.36314209061209,
+      "Energy_reduction_pct": 10.96938791110996
+    },
+    {
+      "Scale": 4,
+      "NumDepartments": 2,
+      "MobilesPerDept": 2,
+      "Cloud_latency_ms": 230.1182,
+      "Fog_latency_ms": 22.1796,
+      "Latency_reduction_pct": 90.36164892650821,
+      "Energy_reduction_pct": 10.83187324024295
+    },
+    {
+      "Scale": 8,
+      "NumDepartments": 2,
+      "MobilesPerDept": 4,
+      "Cloud_latency_ms": 229.703,
+      "Fog_latency_ms": 34.0096,
+      "Latency_reduction_pct": 85.19409846628037,
+      "Energy_reduction_pct": 9.331703040003283
+    },
+    {
+      "Scale": 9,
+      "NumDepartments": 3,
+      "MobilesPerDept": 3,
+      "Cloud_latency_ms": 229.3368,
+      "Fog_latency_ms": 22.6906,
+      "Latency_reduction_pct": 90.10599258383304,
+      "Energy_reduction_pct": 7.900747406617118
+    },
+    {
+      "Scale": 15,
+      "NumDepartments": 5,
+      "MobilesPerDept": 3,
+      "Cloud_latency_ms": 228.7885,
+      "Fog_latency_ms": 22.8044,
+      "Latency_reduction_pct": 90.03254097124638,
+      "Energy_reduction_pct": 4.885130962862687
+    },
+    {
+      "Scale": 16,
+      "NumDepartments": 4,
+      "MobilesPerDept": 4,
+      "Cloud_latency_ms": 228.781,
+      "Fog_latency_ms": 35.9196,
+      "Latency_reduction_pct": 84.29957033145234,
+      "Energy_reduction_pct": 5.539606100121745
+    },
+    {
+      "Scale": 24,
+      "NumDepartments": 6,
+      "MobilesPerDept": 4,
+      "Cloud_latency_ms": 429.6995,
+      "Fog_latency_ms": 34.389,
+      "Latency_reduction_pct": 91.99696532111395,
+      "Energy_reduction_pct": 3.2505965109343906
+    },
+    {
+      "Scale": 25,
+      "NumDepartments": 5,
+      "MobilesPerDept": 5,
+      "Cloud_latency_ms": 327.8812,
+      "Fog_latency_ms": 328.5211,
+      "Latency_reduction_pct": -0.19516215019342723,
+      "Energy_reduction_pct": 0.0019149982910981321
+    },
+    {
+      "Scale": 40,
+      "NumDepartments": 8,
+      "MobilesPerDept": 5,
+      "Cloud_latency_ms": 788.8858,
+      "Fog_latency_ms": 789.317,
+      "Latency_reduction_pct": -0.05465936894795036,
+      "Energy_reduction_pct": 0.008576267341097924
+    },
+    {
+      "Scale": 48,
+      "NumDepartments": 12,
+      "MobilesPerDept": 4,
+      "Cloud_latency_ms": 920.2829,
+      "Fog_latency_ms": 33.7139,
+      "Latency_reduction_pct": 96.33657215623587,
+      "Energy_reduction_pct": -0.2765916887231818
+    },
+    {
+      "Scale": 50,
+      "NumDepartments": 10,
+      "MobilesPerDept": 5,
+      "Cloud_latency_ms": 895.3046,
+      "Fog_latency_ms": 898.2655,
+      "Latency_reduction_pct": -0.33071426193944764,
+      "Energy_reduction_pct": -0.0030196152843053633
+    }
+  ]
+}

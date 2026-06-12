@@ -1,86 +1,34 @@
 #!/usr/bin/env bash
-# run_experiments.sh - compiles the two simulation files and runs all variants.
-# Per-variant logs are written to logs/.
-# CSV output lands in the project root as two unified files:
-# - results_CrowdSensing.csv
-# - results_DCNS.csv
+# Compile and run Fog vs Cloud experiment variants.
+#
+#     ./scripts/run_experiments.sh                 # all phases (224 variants)
+#     ./scripts/run_experiments.sh env env-sparse  # selected phases only
+#     ./scripts/run_experiments.sh --help
+#
+# Logs: logs/variant_NNN_<label>.log
+# CSV:  results/results_*.csv (apps append during simulation)
 set -uo pipefail
 
-# Directory structure
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 OUT_DIR="$PROJECT_DIR/out/production/iFogSim_7"
-JARS_DIR="$PROJECT_DIR/jars"
 SRC_DIR="$PROJECT_DIR/src"
 LOGS_DIR="$PROJECT_DIR/logs"
 RESULTS_DIR="$PROJECT_DIR/results"
 mkdir -p "$LOGS_DIR" "$RESULTS_DIR"
 
-# Build the Java Classpath: compiled output & every jar under jars/
+# Classpath: compiled output + every jar under jars/ (including nested dirs)
 CP="$OUT_DIR"
 while IFS= read -r jar; do
     CP="$CP:$jar"
-done < <(find "$JARS_DIR" -name "*.jar")
+done < <(find "$PROJECT_DIR/jars" -name '*.jar' | sort)
 
-# Compilation step
-echo "[build] Compiling simulation files..."
-javac -cp "$CP" -d "$OUT_DIR" \
-    "$SRC_DIR/org/fog/placement/ModulePlacementEdgewards.java" \
-    "$SRC_DIR/org/fog/placement/MicroservicesMobilityClusteringController.java" \
-    "$SRC_DIR/org/fog/placement/ClusteredMicroservicePlacementLogic.java" \
-    "$SRC_DIR/org/fog/test/perfeval/DCNSFog.java" \
-    "$SRC_DIR/org/fog/test/perfeval/CrowdSensing_Microservices_RandomMobility_Clustering.java"
-echo "[build] Done."
-echo ""
-
-# Tracking variables
-FAILURES=0
-VARIANT=0
-TOTAL=140
-
-# run LABEL CLASS [ARGS...]
-# Captures all JVM output to logs/variant_NNN_LABEL.log and tracks failures.
-run() {
-    local label=$1; shift
-    local class=$1; shift
-    VARIANT=$((VARIANT + 1))
-    local num; printf -v num "%03d" "$VARIANT"
-    local logfile="$LOGS_DIR/variant_${num}_${label}.log"
-
-    echo "--- [$num/$TOTAL] $label  ($(date '+%H:%M:%S')) ---"
-    # Some of the simulations may take longer to complete but no more than 10 minutes.
-    # Timeout to kill the process if it exceeds this limit.
-    (cd "$PROJECT_DIR" && timeout 600 java -cp "$CP" "$class" "$@") > "$logfile" 2>&1
-    local exit_code=$?
-
-    if [ "$exit_code" -eq 0 ]; then
-        echo "[PASS] $label"
-    elif [ "$exit_code" -eq 124 ]; then
-        echo "[TIMEOUT] $label — exceeded 10 min, killed  (log: $logfile)"
-        FAILURES=$((FAILURES + 1))
-    else
-        echo "[FAIL] $label (exit $exit_code) — full log: $logfile"
-        FAILURES=$((FAILURES + 1))
-    fi
-    echo ""
-}
-
-# Class names for the two simulations
+# Main classes (org.fog.test.perfeval.*)
 CS=org.fog.test.perfeval.CrowdSensing_Microservices_RandomMobility_Clustering
 DC=org.fog.test.perfeval.DCNSFog
+ENV=org.fog.test.perfeval.EnvironmentalMonitoringFog
+VR=org.fog.test.perfeval.VRGameFog
 
-# ===========================================================================
-# Phase A — CrowdSensing (56 variants = 28 user counts × Cloud + Fog)
-#
-# Zone 1 — Minimum edge cases          : 1, 2, 3
-# Zone 2 — Small scale baseline        : 5, 8, 10, 12
-# Zone 3 — Pre-crossover fill          : 14, 16
-# Zone 4 — Crossover zone dense sample : 18, 20, 22, 24, 25, 27
-# Zone 5 — Existing anchors            : 15, 30, 50
-# Zone 6 — Post-crossover fill         : 35, 40
-# Zone 7 — RAM boundary zone           : 45, 48, 52, 55
-# Zone 8 — Stress / large scale        : 60, 70, 75, 100
-# ===========================================================================
-
+# Parameter sweeps (areas:cameras, gateways:sensors-per-gateway, departments:mobiles-per-dept, ...)
 CS_USERS=(
     1 2 3
     5 8 10 12
@@ -90,26 +38,6 @@ CS_USERS=(
     45 48 50 52 55
     60 70 75 100
 )
-
-for users in "${CS_USERS[@]}"; do
-    run "CrowdSensing_Cloud_${users}u" "$CS" --users="$users" --cloud-only=true
-    run "CrowdSensing_Fog_${users}u"   "$CS" --users="$users" --cloud-only=false
-done
-
-# ===========================================================================
-# Phase B — DCNS (84 variants = 42 configurations × Cloud + Fog)
-#
-# Each entry is "areas:cameras".
-# Group 1 — Trivial minimum                            : 1x1..2x3
-# Group 2 — Small scale, sub-saturation                : 1x5..3x8
-# Group 3 — Pre-saturation fill                        : 4x7..5x9
-# Group 4 (existing anchors)                           : 3x5, 5x10, 10x15
-# Group 5 — Saturation zone                            : 5x11..6x11
-# Group 6 — Post-saturation fill, pre-exhaustion       : 7x10..10x10
-# Group 7 — MIPS exhaustion zone                       : 10x12..10x14
-# Group 8 — Beyond 150 cameras / stress                : 12x15..20x10
-# Group 9 — Aspect-ratio series (same total cameras)   : 10x5..15x10
-# ===========================================================================
 
 DCNS_CONFIGS=(
     1:1  1:2  1:3  2:2  2:3
@@ -122,25 +50,184 @@ DCNS_CONFIGS=(
     10:5  25:2  2:25  3:10  10:3  15:10
 )
 
-for config in "${DCNS_CONFIGS[@]}"; do
-    areas="${config%%:*}"
-    cameras="${config##*:}"
-    run "DCNS_Cloud_${areas}x${cameras}" "$DC" --areas="$areas" --cameras="$cameras" --cloud=true
-    run "DCNS_Fog_${areas}x${cameras}"   "$DC" --areas="$areas" --cameras="$cameras" --cloud=false
-done
+ENV_CONFIGS=(
+    1:1  1:2  2:2
+    2:4  3:3  4:4  5:3
+    5:5  6:4  8:3
+    8:5  10:4  10:5  12:4
+)
 
-echo "========================================"
-if [ "$FAILURES" -eq 0 ]; then
-    echo "All $TOTAL variants completed successfully."
-    echo "CSV files written to: $RESULTS_DIR"
-    echo "- results_CrowdSensing.csv"
-    echo "- results_DCNS.csv"
-    echo "Logs written to: $LOGS_DIR"
-else
-    echo "$FAILURES of $TOTAL variants FAILED. Check the logs above."
+VR_CONFIGS=(
+    1:1  1:2  2:2
+    2:4  3:3  4:4  5:3
+    5:5  6:4  8:3
+    8:5  10:4  10:5  12:4
+)
+
+# Which phases to run (set from CLI below)
+RUN_CROWD=0
+RUN_DCNS=0
+RUN_ENV=0
+RUN_ENV_SPARSE=0
+RUN_VRGAME=0
+
+print_phases() {
+    printf "  %-11s %3d variants   %s\n" "crowd"      56 "CrowdSensing"
+    printf "  %-11s %3d variants   %s\n" "dcns"       84 "DCNSFog"
+    printf "  %-11s %3d variants   %s\n" "env"        28 "EnvironmentalMonitoringFog, selectivity 1.0"
+    printf "  %-11s %3d variants   %s\n" "env-sparse" 28 "EnvironmentalMonitoringFog, selectivity 0.1"
+    printf "  %-11s %3d variants   %s\n" "vrgame"     28 "VRGameFog"
+}
+
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+    cat <<EOF
+Usage: $0 [phase ...]
+
+Phases:
+EOF
+    print_phases
+    cat <<EOF
+
+No arguments = run all (224 variants).
+EOF
+    exit 0
 fi
 
-mv -f "$PROJECT_DIR/results_CrowdSensing.csv" "$RESULTS_DIR/" 2>/dev/null
-mv -f "$PROJECT_DIR/results_DCNS.csv"         "$RESULTS_DIR/" 2>/dev/null
+if [ "${1:-}" = "--list" ]; then
+    print_phases
+    exit 0
+fi
 
-[ "$FAILURES" -gt 0 ] && exit 1
+if [ $# -eq 0 ]; then
+    RUN_CROWD=1
+    RUN_DCNS=1
+    RUN_ENV=1
+    RUN_ENV_SPARSE=1
+    RUN_VRGAME=1
+else
+    for arg in "$@"; do
+        case "$(echo "$arg" | tr '[:upper:]' '[:lower:]')" in
+            crowd)      RUN_CROWD=1 ;;
+            dcns)       RUN_DCNS=1 ;;
+            env)        RUN_ENV=1 ;;
+            env-sparse) RUN_ENV_SPARSE=1 ;;
+            vrgame)     RUN_VRGAME=1 ;;
+            *)
+                echo "Unknown phase: $arg (try --help)" >&2
+                exit 1
+                ;;
+        esac
+    done
+fi
+
+TOTAL=0
+[ "$RUN_CROWD" -eq 1 ]      && TOTAL=$((TOTAL + 56))
+[ "$RUN_DCNS" -eq 1 ]       && TOTAL=$((TOTAL + 84))
+[ "$RUN_ENV" -eq 1 ]        && TOTAL=$((TOTAL + 28))
+[ "$RUN_ENV_SPARSE" -eq 1 ] && TOTAL=$((TOTAL + 28))
+[ "$RUN_VRGAME" -eq 1 ]     && TOTAL=$((TOTAL + 28))
+
+# Build
+echo "Compiling..."
+javac -cp "$CP" -d "$OUT_DIR" \
+    "$SRC_DIR/org/fog/placement/ModulePlacementEdgewards.java" \
+    "$SRC_DIR/org/fog/placement/MicroservicesMobilityClusteringController.java" \
+    "$SRC_DIR/org/fog/placement/ClusteredMicroservicePlacementLogic.java" \
+    "$SRC_DIR/org/fog/test/perfeval/DCNSFog.java" \
+    "$SRC_DIR/org/fog/test/perfeval/CrowdSensing_Microservices_RandomMobility_Clustering.java" \
+    "$SRC_DIR/org/fog/test/perfeval/EnvironmentalMonitoringFog.java" \
+    "$SRC_DIR/org/fog/test/perfeval/VRGameFog.java"
+
+FAILURES=0
+VARIANT=0
+
+run() {
+    local label=$1
+    local class=$2
+    shift 2
+
+    VARIANT=$((VARIANT + 1))
+    printf -v num "%03d" "$VARIANT"
+    local logfile="$LOGS_DIR/variant_${num}_${label}.log"
+
+    echo "[$num/$TOTAL] $label ($(date '+%H:%M:%S'))"
+    (cd "$PROJECT_DIR" && timeout 600 java -cp "$CP" "$class" "$@") > "$logfile" 2>&1
+    local exit_code=$?
+
+    if [ "$exit_code" -eq 0 ]; then
+        echo "  PASS"
+    elif [ "$exit_code" -eq 124 ]; then
+        echo "  TIMEOUT (>10 min), log: $logfile"
+        FAILURES=$((FAILURES + 1))
+    else
+        echo "  FAIL (exit $exit_code), log: $logfile"
+        FAILURES=$((FAILURES + 1))
+    fi
+}
+
+# crowd - CrowdSensing
+if [ "$RUN_CROWD" -eq 1 ]; then
+    for users in "${CS_USERS[@]}"; do
+        run "CrowdSensing_Cloud_${users}u" "$CS" --users="$users" --cloud-only=true
+        run "CrowdSensing_Fog_${users}u" "$CS" --users="$users" --cloud-only=false
+    done
+fi
+
+# dcns - DCNSFog
+if [ "$RUN_DCNS" -eq 1 ]; then
+    for config in "${DCNS_CONFIGS[@]}"; do
+        areas="${config%%:*}"
+        cameras="${config##*:}"
+        run "DCNS_Cloud_${areas}x${cameras}" "$DC" --areas="$areas" --cameras="$cameras" --cloud=true
+        run "DCNS_Fog_${areas}x${cameras}" "$DC" --areas="$areas" --cameras="$cameras" --cloud=false
+    done
+fi
+
+# env - EnvironmentalMonitoringFog, selectivity 1.0 
+if [ "$RUN_ENV" -eq 1 ]; then
+    for config in "${ENV_CONFIGS[@]}"; do
+        gw="${config%%:*}"
+        spg="${config##*:}"
+        run "EnvMonitoring_Cloud_${gw}x${spg}" "$ENV" \
+            --gateways="$gw" --sensors-per-gateway="$spg" --cloud=true
+        run "EnvMonitoring_Fog_${gw}x${spg}" "$ENV" \
+            --gateways="$gw" --sensors-per-gateway="$spg" --cloud=false
+    done
+fi
+
+# env-sparse - EnvironmentalMonitoringFog, selectivity 0.1
+if [ "$RUN_ENV_SPARSE" -eq 1 ]; then
+    for config in "${ENV_CONFIGS[@]}"; do
+        gw="${config%%:*}"
+        spg="${config##*:}"
+        run "EnvMonitoringSparse_Cloud_${gw}x${spg}" "$ENV" \
+            --gateways="$gw" --sensors-per-gateway="$spg" --cloud=true --anomaly-selectivity=0.1
+        run "EnvMonitoringSparse_Fog_${gw}x${spg}" "$ENV" \
+            --gateways="$gw" --sensors-per-gateway="$spg" --cloud=false --anomaly-selectivity=0.1
+    done
+fi
+
+# vrgame - VRGameFog
+if [ "$RUN_VRGAME" -eq 1 ]; then
+    for config in "${VR_CONFIGS[@]}"; do
+        depts="${config%%:*}"
+        mobiles="${config##*:}"
+        run "VRGame_Cloud_${depts}x${mobiles}" "$VR" \
+            --departments="$depts" --mobiles-per-dept="$mobiles" --cloud=true
+        run "VRGame_Fog_${depts}x${mobiles}" "$VR" \
+            --departments="$depts" --mobiles-per-dept="$mobiles" --cloud=false
+    done
+fi
+
+# Finish: move CSV from project root to results/
+mv -f "$PROJECT_DIR/results_CrowdSensing.csv" "$RESULTS_DIR/" 2>/dev/null
+mv -f "$PROJECT_DIR/results_DCNS.csv" "$RESULTS_DIR/" 2>/dev/null
+mv -f "$PROJECT_DIR/results_EnvironmentalMonitoring.csv" "$RESULTS_DIR/" 2>/dev/null
+mv -f "$PROJECT_DIR/results_VRGame.csv" "$RESULTS_DIR/" 2>/dev/null
+
+if [ "$FAILURES" -eq 0 ]; then
+    echo "Done: $TOTAL variants completed successfully. CSV in $RESULTS_DIR/"
+else
+    echo "Done with errors: $FAILURES / $TOTAL failed. See $LOGS_DIR/"
+    exit 1
+fi
