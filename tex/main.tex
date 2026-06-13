@@ -275,7 +275,31 @@ Scenariusz VRGame pokazuje, że przy interaktywnych aplikacjach VR/EEG Fog skrac
 W dalszych badaniach warto sprawdzić, czy własną aplikację można przeciążyć większą liczbą sensorów na bramę, przeanalizować koszty chmurowe przy hybrydowym placementcie oraz powtórzyć niestabilne konfiguracje DCNS przy dłuższym czasie symulacji.
 
 \section{Wkład członków zespołu}
-Placeholder text.
+
+\subsection*{Adrian Chmiel --- część techniczna i eksperymenty}
+\begin{itemize}[noitemsep,topsep=2pt]
+    \item konfiguracja forka iFogSim i środowiska uruchomieniowego
+    \item rozszerzenie aplikacji DCNS, CrowdSensing i VRGame o argumenty wiersza poleceń oraz eksport metryk do CSV
+    \item implementacja aplikacji monitoringu środowiskowego, w tym parametru selektywności detektora anomalii
+    \item modyfikacje logiki placementu Cloud i Fog dla wszystkich scenariuszy
+    \item przygotowanie skryptu eksperymentalnego, uruchomienie symulacji i zebranie surowych wyników
+\end{itemize}
+
+\subsection*{Michał Bogucki --- analiza wyników}
+\begin{itemize}[noitemsep,topsep=2pt]
+    \item przetworzenie wyników z plików CSV i przygotowanie wykresów
+    \item porównanie strategii Cloud i Fog oraz interpretacja kompromisów między opóźnieniem, ruchem sieciowym, energią i czasem migracji
+    \item identyfikacja efektów zaburzających pomiar, takich jak nasycenie MIPS, nieukończone pętle, mylące odczyty opóźnień
+    \item redakcja sekcji \emph{Eksperymenty}, \emph{Wyniki} oraz \emph{Wnioski}
+\end{itemize}
+
+\subsection*{Szymon Bedeniczuk --- teoria i dokumentacja}
+\begin{itemize}[noitemsep,topsep=2pt]
+    \item opis fog computingu oraz narzędzia iFogSim w sekcjach \emph{Wprowadzenie} oraz \emph{Cel i Zastosowanie}
+    \item opis architektury warstwowej oraz interfejsu oprogramowania
+    \item przegląd literatury wraz z powiązaniem publikacji z eksperymentami projektu
+    \item opracowanie bibliografii oraz złożenie i finalna redakcja raportu
+\end{itemize}
 
 \clearpage
 \printbibliography
