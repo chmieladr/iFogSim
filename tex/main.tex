@@ -22,7 +22,7 @@
     Projekt 27 ORKUZ --- iFogSim
 }
 
-\author{Szymon Bedeniczuk, Adrian Chmiel} %DOPISZCIE SIE 
+\author{Szymon Bedeniczuk, Adrian Chmiel, Michał Bogucki}
 \date{\today}
 \maketitle
 
@@ -34,67 +34,67 @@
 \pagestyle{headings}
 
 \section{Wprowadzenie}
-Fog Computing, oraz Edge computing są pojęciem stworzonym przez Cisco, i definiowane jest jako system obliczeń rozproszonych, który rozwija pojęcie Cloud computingu, aby pozwolić na rozszerzenie chmury obliczeniowych do urządzeń brzegowych, takich jak routery, bramy IoT, czy lokalne serwery. Komponenty aplikacji mogą działać w sposób rozproszony, korzystając z usług świadczonych przez infrastrukturę rozproszoną, gdzie zasady zarządzania zasobami kontrolują i zarządzają usługami oferowanymi przez każde urządzenie. 
-Rozwiązanie to jest zapewnia większą gęstość zasobów, co pozwala również na mniejsze opóźnienia w aplikacjach mobilnych, które często tego wymagają. Stwarza to większą skalowalność rozwiązania , z uwagi na mniejsze zapotrzebiowanie na same serwery chmurowe, gdyż pozwala ono na rozwinięcie sieci przez dodanie samych urządzeń brzegowych, oraz zmniejsza to przepływ danych do chmury. Wykorzystanie Fog Computingu pomaga także w działaniu aplikjacji krytycznych, wymagających przetwarzaniu danych w czasie rzeczywistym.
+Fog Computing, pojęcie wprowadzone przez Cisco, oraz Edge Computing są modelami obliczeń rozproszonych rozszerzającymi koncepcję Cloud Computingu. Umożliwiają one przeniesienie części przetwarzania danych z centralnej chmury bliżej urządzeń brzegowych, takich jak routery, bramy IoT czy lokalne serwery, oraz bliżej źródeł danych i użytkowników końcowych. Komponenty aplikacji mogą działać w sposób rozproszony, korzystając z usług świadczonych przez infrastrukturę rozproszoną, w której zasady zarządzania zasobami kontrolują i zarządzają usługami oferowanymi przez każde urządzenie. 
+Rozwiązanie to zapewnia większą gęstość zasobów, co pozwala ograniczyć opóźnienia w aplikacjach mobilnych, które często wymagają krótkiego czasu reakcji. Zwiększa ono również skalowalność systemu, ponieważ zmniejsza obciążenie centralnych serwerów chmurowych, umożliwia rozwój infrastruktury o kolejne urządzenia brzegowe oraz ogranicza ilość danych przesyłanych do chmury. Wykorzystanie fog computingu pomaga także w działaniu aplikacji krytycznych, wymagających przetwarzania danych w czasie rzeczywistym.
 
 \section{Cel i Zastosowanie}
-iFogSim, to narzędzie stworzone do modelowania i symulacji środowisk Fog, Edge computing, oraz Internet of Things (IoT), zbudowane na fundamentach frameworku CloudSim, narzędzia do symulowania środowisk Cloud. Narzędzie docelowo umożliwia testowanie i analizowanie strategii zarządzania symulowanymi zasobami, przed stworzeniem rzeczywistej infrastruktury.
+iFogSim to narzędzie stworzone do modelowania i symulacji środowisk Fog, Edge computing oraz Internet of Things (IoT), zbudowane na fundamentach frameworku CloudSim, narzędzia do symulowania środowisk Cloud. Narzędzie docelowo umożliwia testowanie i ocenę strategii zarządzania symulowanymi zasobami przed stworzeniem rzeczywistej infrastruktury.
 
 Głównym celem iFogSim jest prowadzenie symulacji związanych z rozmieszaniem modułów aplikacji w środowiskach Fog i Edge w celu optymalizacji prędkości przesyłania danych między urządzeniami, harmonogramem ich zadań, analizą latencji, zużyciem energii, oraz wykorzystaniem sieci w infrastrukturze~\cite{iFogSimTut}.
 
 Narzędzie iFogSim wykorzystywane już było w symulacjach infrastruktur np. inteligentnych budynków, w których wiele systemów musi współpracować ze sobą, oraz działać przy jak najmniejszej latencji~\cite{iFogSimSmartBuilding}.
 
-Kolejnym przykładem wykorzystania tego narzędzia jest infrastruktura medyczna mająca na celu monitorowanie pacjentów w czasie rzeczywistym. To zastosowanie jest przykładem sytuacji, w której niska latencja jest najważniejsza, gdyż zależeć od niej może życie lub zdrowie pacjenta~\cite{HealthCare}.
+Kolejnym przykładem wykorzystania tego narzędzia jest infrastruktura medyczna mająca na celu monitorowanie pacjentów w czasie rzeczywistym. To zastosowanie jest przykładem sytuacji, w której niska latencja jest najważniejsza, gdyż może od niej zależeć zdrowie lub życie pacjenta~\cite{HealthCare}.
 
-Ostatnim przykładem będzie monitoring wideo w smart city, w takowym zastosowaniu najważniejszym jest obserwacja obrazu audio i wideo, analiza go w celu wykrywania zagrożeń, a więc szybkie przetwarzanie danych w czasie rzeczywistym. Badacze porównali rozwiązanie bazujące na systemie Cloud i Fog, z czego Fog okazał się bardziej atrakcyjny~\cite{SmartCity}.
+Ostatnim przykładem będzie monitoring wideo w smart city. W takim zastosowaniu kluczowe znaczenie ma rejestrowanie obrazu i dźwięku, a następnie ich analiza w celu wykrywania zagrożeń. Wymaga to szybkiego przetwarzania danych w czasie rzeczywistym. Badacze porównali rozwiązania bazujące na modelach Cloud Computing i Fog Computing, przy czym Fog okazał się bardziej korzystny~\cite{SmartCity}.
 
-Jak widać na podanych przykładach, systemy fog są testowane przy użyciu iFogSim głównie na systemach, które aktualnie wykorzystują systemy chmurowe, lub na potencjalnych systemach, które łączą wiele ściśle powiązanych zastosowań, w celu optymalizacji, oraz koordynacji ich działań.
+Przedstawione przykłady pokazują, że iFogSim jest wykorzystywany przede wszystkim do testowania rozwiązań typu fog w dwóch przypadkach. Pierwszy dotyczy systemów, które obecnie opierają się na infrastrukturze chmurowej. Drugi obejmuje rozwiązania integrujące wiele powiązanych ze sobą zastosowań, w których kluczowe znaczenie mają optymalizacja oraz koordynacja ich działania.
 
 \section{Architektura Narzędzia}
-iFogSim składa się z warstw, które współpracując ze sobą, odpowiadają za określone zadania i poprawne działanie systemu. Odzwierciedlają one architekturę IoT, w której urządzenia generują dane, które potem przekazywane do urządzeń w wyższych warstwach po analizie przekazują zadania do urządzeń wykonawczych~\cite{iFogSimInf}. 
+iFogSim składa się z warstw, które współpracują ze sobą, odpowiadając za określone zadania oraz zapewniając prawidłowe działanie systemu. Odzwierciedlają one architekturę IoT, w której urządzenia generują dane, a następnie przekazują je do wyższych warstw. Po przeprowadzeniu analizy system może przesłać odpowiednie zadania do urządzeń wykonawczych.~\cite{iFogSimInf}. 
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\linewidth,keepaspectratio]{architekturaiFogSim.png}
     \caption{Architektura narzędzia iFogSim, wykorzystane ze strony \url{https://onlinelibrary.wiley.com/}.}
 \end{figure}
-Poniższe podrozdziały opisują kolejno warstwy widoczne na rysunku --- od urządzeń IoT u dołu, przez Fog i strumień danych, aż po monitorowanie, zarządzanie zasobami i aplikacje u góry hierarchii.
+Poniższe podrozdziały opisują kolejno warstwy widoczne na rysunku — od urządzeń IoT u dołu, przez Fog i strumień danych, aż po monitorowanie, zarządzanie zasobami i aplikacje u góry hierarchii.
 
 \subsection{Warstwa urządzeń IoT}
-Urządzenia IoT stanowią najniższą warstwę architektury, gdyż są one zestawem urządzeń odpowiedzialnych za kontakt z użytkownikiem. Przykładami urządzeń z tej warsty są między innymi urządzenia zbierające dane, takie jak sensory, kamery, mikrofony itd. Aktuatory też są urządzeniami należącymi do tej kategorii, odpowiadają one za wywoływanie sygnałów, zarządzanie oświetleniem, głośnikami, zamkami, alarmami itd. Ich działanie jest zależne od urządzeń w wyższych warstwach.
+Urządzenia IoT stanowią najniższą warstwę architektury, gdyż są zestawem urządzeń odpowiedzialnych za kontakt z użytkownikiem. Przykładami urządzeń z tej warstwy są między innymi urządzenia zbierające dane, takie jak sensory, kamery, mikrofony itd. Aktuatory również należą do tej kategorii. Odpowiadają za wykonywanie określonych działań, takich jak sterowanie oświetleniem, głośnikami, zamkami lub alarmami. Ich praca jest sterowana przez urządzenia znajdujące się w wyższych warstwach architektury.
 
 \subsection{Warstwa urządzeń Fog}
-Kolejną warstwą w środowisku są urządzenia fog, które zajmują się przetwarzaniem otrzymanych danych, oraz wysyłanie sygnałów do urządzeń warstwy niższej. Do tych urządzeń należą bramy sieciowe, routery, oraz lokalne serwery. Urządzenia z tej warstwy też podlegają wewnętrznej hierarchii. Urządzenia najbliższe użytkownikowi są blisko uzytkownika, routery i bramy sieciowe. Wyżej w hierarchii są lokalne serwery, urządzenia pomiędzy chmurą a użytkownikiem, a najwyżej sama chmura.
-Z tym stanem wiąże się też fakt, że urządzenia na tym samym poziomie hierarchii nie komunikują się ze sobą. ciąg komunikacyjny idzie z góry do dołu, w parze parent-child. Struktura ta może przypominać drzewo.
+Kolejną warstwą w środowisku są urządzenia fog, które zajmują się przetwarzaniem otrzymanych danych oraz wysyłaniem sygnałów do urządzeń warstwy niższej. Do tych urządzeń należą bramy sieciowe, routery, oraz lokalne serwery. Urządzenia z tej warstwy również podlegają wewnętrznej hierarchii. Urządzenia najbliższe użytkownikowi to routery i bramy sieciowe. Wyżej w hierarchii są lokalne serwery, urządzenia pomiędzy użytkownikiem a chmurą. Na najwyższym poziomie tej architektury znajduje się chmura obliczeniowa.
+Z tym stanem wiąże się też fakt, że urządzenia na tym samym poziomie hierarchii nie komunikują się ze sobą. Ciąg komunikacyjny idzie z góry do dołu, w parze parent-child. Struktura ta może przypominać drzewo.
 
 \subsection{Warstwa wygenerowanych danych}
-Warstwa danych jest szeroko pojętym strumieniem danych przesyłanymi poprzednich dwóch warstw do szerszego systemu i z powrotem, oraz pomiędzy urządzeniami wyższych wastw, które odpowiadają za wastwę aplikacyjną. Takimi danymi mogą być odczyty z sensorów, dane z aplikacji urządzeń fog, jak i informacje przesyłane do urządzeń IoT, aktualizacje działania urządzeń i tym podobnych.
+Warstwa danych jest szeroko pojętym strumieniem danych przesyłanym pomiędzy poprzednimi dwoma warstwami a szerszym systemem oraz z powrotem, a także pomiędzy urządzeniami wyższych warstw, które odpowiadają za warstwę aplikacyjną. Takimi danymi mogą być odczyty z sensorów, dane z aplikacji urządzeń fog, informacje przesyłane do urządzeń IoT, aktualizacje ich działania oraz inne komunikaty systemowe.
 
 \subsection{Warstwa monitorowania infrastruktury}
-Warstwa ta, jak nazwa wskazuje, odpowiedzialna jest za zbieranie i monitorowanie danych obciążenia infrastruktury. Do tych danych zalicza się wykorzystanie zasobów podzespołów, przepustowość sieci, zużycie energii, oraz informacje o stanie urządzeń IoT, oraz ich aktywności. Dane te, po zebraniu przekazywane są do warstwy zarządzania zasobami, albo być przekazane innym servisom w ramach potrzeby.
+Warstwa ta odpowiada za zbieranie i monitorowanie danych dotyczących obciążenia infrastruktury. Do tych danych zalicza się wykorzystanie zasobów podzespołów, przepustowość sieci, zużycie energii, oraz informacje o stanie urządzeń IoT, oraz ich aktywności. Dane te, po zebraniu przekazywane są do warstwy zarządzania zasobami, albo być przekazane innym servisom w ramach potrzeby.
 \subsection{Warstwa zarządzania zasobami}
-Zarządzanie zasobami jest głównym komponentem infrastruktury. Składa się ona z komponentów zarządzająch zasobami warstwy urządzeń fog, w celu osiągnięcia celów warstw aplikacji, przy minimalnym wykorzystaniu zasobów. 
-Warstwa korzystając z informacji na temat zasobów zebrane z warstwy poprzedniej identyfikuje najlepsze możliwe urządzenia do hostowania aplikacji, oraz alokowania zasobów na nich. Może ona także wprowadzać zasady dla infrastruktury, w celu jak najlepszego wykorzystania zasobów. Mogą one być za równo skomplikowane, na przykład mające na celu wprowadzanie dynamicznych zmian w systemie w czasie rzeczywistym, lub proste, jak zwyczajnie, takie jak rozłożenie całej infrastruktury po równo, w każdym urządzeniu.
-Zarządzanie zasobami może być także dystrybuowane, w takiej sytuacji każde z urządzeń może się zarządzać samo, bez wiedzy reszty infrastruktury, lub centrlizowane, gdzie wszystkim zarządza jeden system.
+Zarządzanie zasobami jest głównym komponentem infrastruktury. Obejmuje ono mechanizmy odpowiedzialne za zarządzanie zasobami warstwy urządzeń fog, tak aby spełnić wymagania warstwy aplikacyjnej przy możliwie najmniejszym wykorzystaniu zasobów. 
+Warstwa korzystając z informacji na temat zasobów zebrane z warstwy poprzedniej identyfikuje najlepsze możliwe urządzenia do hostowania aplikacji, oraz alokowania zasobów na nich. Warstwa ta może również definiować reguły zarządzania infrastrukturą, których celem jest możliwie efektywne wykorzystanie dostępnych zasobów. Mogą one być za równo skomplikowane, na przykład mające na celu wprowadzanie dynamicznych zmian w systemie w czasie rzeczywistym, lub proste, jak zwyczajnie, takie jak rozłożenie całej infrastruktury po równo w każdym urządzeniu.
+Zarządzanie zasobami może być także dystrybuowane, w takiej sytuacji każde z urządzeń może się zarządzać samo, bez wiedzy reszty infrastruktury, lub centralizowane, gdzie wszystkim zarządza jeden system.
 
 \subsection{Warstwa aplikacji}
-Jest to warstwa samych aplikacji przeznaczonych do infrsatruktury fog, a przez to do modelu rozproszonego przepływu danych (DDF)~\cite{DDF}. W modelu przepływu danych logikę aplikacji można rozrysować jako ukierunkowany graf, w którym każdy wierzchołek może przyjmować input, output, lub być niezależnym modułem przetwarzającym.
-W iFogSim aplikację opisuje klasa Application, w której moduły AppModule mają przypisane wymagania MIPS, RAM i przepustowości. Krawędzie grafu AppEdge łączą sensory, moduły i aktuatory, określając kierunek przepływu danych w górę lub w dół hierarchii, oraz rozmiar przesyłanych krotek (Tuple). Zamknięte ścieżki przetwarzania definiuje AppLoop, co pozwala mierzyć opóźnienie całego cyklu w eksperymentach rozmieszczania modułów.
-Taki model dataflow jest wspólną podstawą wszystkich scenariuszy symulacyjnych opisanych dalej w raporcie.
+Jest to warstwa samych aplikacji przeznaczonych do infrastruktury fog, a przez to do modelu rozproszonego przepływu danych (DDF)~\cite{DDF}. W modelu przepływu danych logikę aplikacji można przedstawić jako ukierunkowany graf, w którym każdy wierzchołek może reprezentować moduł wejściowy, moduł wyjściowy lub niezależny moduł przetwarzający. Pozwala to na dynamiczne dodawanie lub usuwanie wierzchołków oraz na ich funkcjonalność.
+W iFogSim aplikację opisuje klasa Application, w której moduły AppModule mają przypisane wymagania dotyczące mocy obliczeniowej, pamięci RAM oraz przepustowości. Krawędzie grafu AppEdge łączą sensory, moduły i aktuatory, określając kierunek przepływu danych w górę lub w dół hierarchii oraz rozmiar przesyłanych krotek (tuples). Zamknięte ścieżki przetwarzania definiuje AppLoop, co pozwala mierzyć opóźnienie całego cyklu w eksperymentach przypisywania modułów do urządzeń.
+Taki model dataflow stanowi punkt wyjścia dla wszystkich scenariuszy symulacyjnych opisanych dalej w raporcie.
 
 \section{Przegląd literatury}
-W literaturze dotyczącej iFogSim można wyróżnić trzy podstawowe publikacje, do których odnosimy się w dalszej części pracy.
-Pierwsza z nich~\cite{iFogSimSPE} przedstawia oryginalny toolkit iFogSim jako rozszerzenie CloudSim do modelowania zarządzania zasobami w IoT, Edge i Fog. Autorzy opisują hierarchię urządzeń, model aplikacji DDF oraz sposób rozmieszczania modułów, co stanowi fundament naszych eksperymentów porównujących strategię Cloud i Fog. Należy jednak pamiętać, że oryginalny artykuł nie uwzględniał mobilności urządzeń, a model energii pozostaje uproszczony, gdyż wyniki symulacji zależą od ręcznego wymiarowania parametrów MIPS.
-Kolejna praca~\cite{iFogSim2JSS} rozwija symulator o mobilność, klastrowanie mikroserwisów i migrację, co jest istotne zwłaszcza dla scenariusza CrowdSensing. Z analizy tej publikacji wynika, że samo rozszerzenie symulatora o mobilność nie oznacza jeszcze automatycznej przewagi Fog nad Cloud. Nasze wyniki CrowdSensing pokazują to wyraźnie: przy małej liczbie użytkowników dominuje narzut migracji, w średniej skali widać korzyść z lokalnego przetwarzania, a przy dużym obciążeniu brzeg znów traci przewagę. Wadą tego rozszerzenia jest przy tym rosnąca złożoność konfiguracji, gdyż koszt migracji modułów może zdominować korzyść Fog przy małej skali obciążenia.
-Rozdział tutorialowy~\cite{iFogSimTutBook} w opracowaniu Buyya i Srirama porządkuje sposób budowy topologii, definiowania aplikacji i zbierania metryk, takich jak latencja, energia czy wykorzystanie sieci. W naszym projekcie zastosowaliśmy podobne podejście: jawne definiowanie pętli aplikacyjnych, zapis wyników do plików CSV oraz porównanie placementu Cloud-only z placementem Fog opartym na ModulePlacementEdgewards. Tutorial opisuje API symulatora, lecz nie dostarcza walidacji na danych produkcyjnych ani gotowych benchmarków dla wszystkich domen IoT, dlatego w projekcie sami zdefiniowaliśmy scenariusze eksperymentalne.
-Podsumowując przegląd literatury, korzyść z Fog zależy od tego, jak dobrze dopasowane są zasoby brzegowe do obciążenia (DCNS), jak kosztowna jest migracja (CrowdSensing) oraz jak złożony jest przepływ danych w aplikacji (nasz scenariusz monitoringu środowiskowego). Przeniesienie obliczeń bliżej urządzeń IoT bez sprawdzenia nasycenia MIPS może dać wynik taki sam jak w chmurze albo nawet gorszy pod względem energii.
+W literaturze dotyczącej iFogSim można wyróżnić trzy podstawowe publikacje, które stanowią punkt odniesienia dla dalszej części pracy.
+Pierwsza z nich~\cite{iFogSimSPE} przedstawia oryginalny toolkit iFogSim jako rozszerzenie CloudSim do modelowania zarządzania zasobami w IoT, Edge i Fog. Autorzy opisują hierarchię urządzeń, model aplikacji DDF oraz sposób rozmieszczania modułów, co stanowi podstawę naszych eksperymentów porównujących strategie Cloud i Fog. Należy jednak pamiętać, że oryginalny artykuł nie uwzględniał mobilności urządzeń, wykorzystywał uproszczony model energii, a wyniki symulacji zależały od ręcznie dobranych parametrów MIPS.
+Kolejna praca~\cite{iFogSim2JSS} rozszerza możliwości symulatora o obsługę urządzeń mobilnych, grupowanie mikroserwisów w klastry oraz mechanizmy migracji, co jest istotne zwłaszcza w scenariuszu CrowdSensing. Z analizy tej publikacji wynika, że samo rozszerzenie symulatora o mobilność nie oznacza jeszcze automatycznej przewagi Fog nad Cloud. Nasze wyniki CrowdSensing pokazują to wyraźnie: przy małej liczbie użytkowników dominuje narzut migracji, w średniej skali widać korzyść z lokalnego przetwarzania, a przy dużym obciążeniu przetwarzanie brzegowe nie zapewnia już tak wyraźnych korzyści. Wadą tego rozszerzenia jest przy tym rosnąca złożoność konfiguracji, gdyż koszt migracji modułów może zdominować korzyść Fog przy małej skali obciążenia.
+Rozdział tutorialowy~\cite{iFogSimTutBook} w opracowaniu Buyya i Srirama porządkuje sposób budowania topologii, definiowania aplikacji oraz zbierania metryk, takich jak latencja, energia czy wykorzystanie sieci. W naszym projekcie zastosowaliśmy podobne podejście: jawne definiowanie pętli aplikacyjnych, zapis wyników do plików CSV oraz porównanie placementu Cloud-only z placementem Fog opartym na ModulePlacementEdgewards. Tutorial opisuje API symulatora, lecz nie dostarcza walidacji na danych produkcyjnych ani gotowych benchmarków dla wszystkich domen IoT, dlatego w projekcie sami zdefiniowaliśmy scenariusze eksperymentalne.
+Podsumowując przegląd literatury, korzyść z Fog zależy od tego, jak dobrze dopasowane są zasoby brzegowe do obciążenia (DCNS), jak kosztowna jest migracja (CrowdSensing) oraz jak złożony jest przepływ danych w aplikacji (nasz scenariusz monitoringu środowiskowego). Przeniesienie obliczeń bliżej urządzeń IoT bez sprawdzenia nasycenia MIPS może dać wynik taki sam jak w chmurze albo nawet gorszy pod względem zużycia energii.
 
 \section{Interfejs programowania}
 W naszym forku iFogSim interfejs programowania służy do zbudowania topologii urządzeń, zdefiniowania aplikacji oraz uruchomienia symulacji z wybraną strategią rozmieszczania modułów. Poniżej opisano elementy API wykorzystane we wszystkich czterech scenariuszach eksperymentalnych.
 
 \subsection{Struktura kodu}
-Kod źródłowy iFogSim podzielony jest na pakiety odpowiadające poszczególnym warstwom symulatora. Tabela~\ref{tab:packages} zestawia najważniejsze z nich wraz z rolami i klasami używanymi w naszych eksperymentach.
-iFogSim dziedziczy po CloudSim model zdarzeń dyskretnych --- DES, w którym cała symulacja to sekwencja zdarzeń kolejkowanych przez silnik \texttt{CloudSim}. Encje symulacji --- urządzenia Fog, sensory i aktuatory --- rejestruje \texttt{FogBroker}, a przetwarzanie krotek oraz rozliczenie zużycia zasobów odbywa się asynchronicznie w pętli zdarzeń.
+Kod źródłowy iFogSim jest podzielony na pakiety odpowiadające poszczególnym warstwom symulatora. Tabela~\ref{tab:packages} zestawia najważniejsze z nich wraz z rolami i klasami używanymi w naszych eksperymentach.
+iFogSim dziedziczy po CloudSim model zdarzeń dyskretnych — DES, w którym cała symulacja to sekwencja zdarzeń kolejkowanych przez silnik \texttt{CloudSim}. Encje symulacji – urządzenia Fog, sensory i aktuatory – rejestruje \texttt{FogBroker}, a przetwarzanie krotek oraz rozliczenie zużycia zasobów odbywają się asynchronicznie w pętli zdarzeń.
 
 Harmonogramowanie modułów aplikacji na hoście obliczeniowym \texttt{PowerHost} realizuje \texttt{Stream\-Operator\-Scheduler}, który decyduje o kolejności obsługi operatorów strumieniowych. Dzięki temu można porównywać strategie rozmieszczenia modułów w tych samych warunkach topologicznych.
 
@@ -121,11 +121,11 @@ Pakiet & Rola & Kluczowe klasy \\
 \end{table}
 
 \subsection{Klasy infrastruktury}
-Węzły infrastruktury reprezentuje klasa FogDevice, która określa m.in. moc obliczeniową (MIPS), pamięć RAM, przepustowość i model zużycia energii. Sensory i aktuatory generują oraz odbierają krotki danych według zadanego rozkładu czasu, na przykład stałego interwału --- DeterministicDistribution. Encje symulacji rejestruje FogBroker w ramach CloudSim.
+Węzły infrastruktury reprezentuje klasa FogDevice, która określa m.in. moc obliczeniową (MIPS), pamięć RAM, przepustowość i model zużycia energii. Sensory i aktuatory generują oraz odbierają krotki danych według zadanego rozkładu czasu, na przykład stałego interwału — DeterministicDistribution. Encje symulacji rejestruje FogBroker w ramach CloudSim.
 
 \subsection{Warstwa aplikacji i sterowanie}
 Aplikację tworzy się przez dodanie modułów, krawędzi przepływu danych oraz mapowań krotek między modułami. AppLoop wyznacza ścieżkę, dla której mierzone jest opóźnienie end-to-end. Symulację uruchamia Controller.submitApplication z wybranym placementem: ModulePlacementMapping umieszcza wszystkie moduły w chmurze, natomiast ModulePlacementEdgewards próbuje wykorzystać zasoby urządzeń Fog bliżej źródła danych.
-W trakcie symulacji zbierane są m.in. opóźnienia pętli --- TimeKeeper, wykorzystanie sieci --- NetworkUsageMonitor oraz energia zużyta przez poszczególne urządzenia FogDevice.
+W trakcie symulacji zbierane są m.in. opóźnienia pętli – TimeKeeper, wykorzystanie sieci – NetworkUsageMonitor oraz energia zużyta przez poszczególne urządzenia FogDevice.
 
 \subsection{Interfejs wiersza poleceń i eksport wyników}
 Aplikacje testowe z katalogu \texttt{perfeval} rozszerzyliśmy o argumenty wiersza poleceń, dzięki czemu ten sam plik \texttt{.java} można uruchamiać w wielu konfiguracjach bez ponownej kompilacji.
@@ -137,15 +137,15 @@ Aplikacje testowe z katalogu \texttt{perfeval} rozszerzyliśmy o argumenty wiers
     \item \textbf{VRGame}: \texttt{--departments}, \texttt{--mobiles-per-dept}, \texttt{--cloud}
 \end{itemize}
 
-Po zakończeniu symulacji wyniki dopisywane są do pliku CSV danego scenariusza. Zapis obejmuje opóźnienie pętli, wykorzystanie sieci, energię całkowitą i koszt wykonania w chmurze, a w DCNS dodatkowo osobno opóźnienie detekcji i śledzenia oraz opóźnienie sterowania PTZ --- kolumny \texttt{Loop1Latency}, \texttt{Loop2Latency}.
+Po zakończeniu symulacji wyniki dopisywane są do pliku CSV danego scenariusza. Zapis obejmuje opóźnienie pętli, wykorzystanie sieci, energię całkowitą i koszt wykonania w chmurze, a w DCNS dodatkowo osobno opóźnienie detekcji i śledzenia oraz opóźnienie sterowania PTZ — kolumny \texttt{Loop1Latency}, \texttt{Loop2Latency}.
 
 \subsection{Skrypt eksperymentalny}
 Uruchomienie wszystkich wariantów realizuje skrypt scripts/run\_experiments.sh. Kompiluje on zmodyfikowane klasy placementu oraz cztery aplikacje, a następnie uruchamia łącznie 224 warianty symulacji. Dla każdego wariantu obowiązuje limit czasu 10 minut, a pełne logi trafiają do katalogu logs/. Gotowe pliki CSV są przenoszone do katalogu results/.
 
 \section{Aplikacje}
-W projekcie wykorzystaliśmy cztery aplikacje symulacyjne. Trzy z nich pochodzą z oryginalnego repozytorium iFogSim --- katalog perfeval, a czwartą --- monitoring środowiskowy --- zaimplementowaliśmy sami w ramach forka.
+W projekcie wykorzystaliśmy cztery aplikacje symulacyjne. Trzy z nich pochodzą z oryginalnego repozytorium iFogSim — katalog perfeval, a czwartą — monitoring środowiskowy — zaimplementowaliśmy sami w ramach forka.
 
-\subsection{DCNS --- Intelligent Video Surveillance (oryginalna aplikacja)}
+\subsection{DCNS – Intelligent Video Surveillance (oryginalna aplikacja)}
 Klasa DCNSFog.java (autor: Harshit Gupta) modeluje monitoring wideo w smart city. Dane z kamer przechodzą przez detekcję ruchu, detektor obiektów i tracker; aplikacja ma dwie pętle pomiarowe: \emph{detekcji i śledzenia} (motion\_detector $\rightarrow$ object\_detector $\rightarrow$ object\_tracker) oraz \emph{sterowania PTZ} (object\_tracker $\rightarrow$ PTZ\_CONTROL). Topologia obejmuje chmurę, serwer proxy, routery obszarowe (2800 MIPS) oraz sensory kamer wysyłające dane co 5 ms.
 
 \subsection{CrowdSensing --- mobilne mikroserwisy (oryginalna aplikacja)}
@@ -169,7 +169,7 @@ Pętla pomiarowa obejmuje moduły od filtra do alarmu. Infrastruktura składa si
 Dodatkową modyfikacją w forku jest parametr \texttt{--anomaly-selectivity}, który przez \texttt{FractionalSelectivity} na wyjściu modułu \texttt{anomaly\_detector} określa, jaki ułamek krotek docierających do detektora generuje alarm. W monitoringu środowiskowym większość odczytów jest normalna, więc ciężki detektor (1500 MIPS) nie powinien uruchamiać się dla każdej krotki. Domyślna wartość parametru wynosi 1,0, a w drugim przebiegu w fazie \texttt{env-sparse}, parametr został zredukowany do 0,1. W wynikowych danych energia Fog pozostaje taka sama, jak przy selektywności 1,0 (np. 12$\times$4: ok. 5\,407\,003\,W w obu fazach), natomiast ruch sieciowy Cloud maleje --- przy 12$\times$4 z ok. 263\,171 do ok. 238\,893 jednostek (ok. 9\%).
 
 \subsection{VRGameFog --- VR/EEG (oryginalna aplikacja, rozszerzona)}
-Kolejnym przykładem z katalogu perfeval jest klasa VRGameFog.java (autor: Harshit Gupta), modelująca grę VR sterowaną sygnałem EEG. Aplikacja ma jedną pętlę pomiarową: sensor EEG $\rightarrow$ klient $\rightarrow$ kalkulator stężenia $\rightarrow$ klient $\rightarrow$ aktuator, co odzwierciedla wymagania interaktywne --- opóźnienie end-to-end decyduje o płynności sterowania. Moduł client emituje krotki typu \texttt{\_SENSOR} z selektywnością 0,9, gdyż nie każdy odczyt EEG wymaga pełnej analizy koncentracji.
+Kolejnym przykładem z katalogu perfeval jest klasa VRGameFog.java (autor: Harshit Gupta), modelująca grę VR sterowaną sygnałem EEG. Aplikacja ma jedną pętlę pomiarową: sensor EEG $\rightarrow$ klient $\rightarrow$ kalkulator stężenia $\rightarrow$ klient $\rightarrow$ aktuator, co odzwierciedla wymagania interaktywne — opóźnienie end-to-end decyduje o płynności sterowania. Moduł client emituje krotki typu \texttt{\_SENSOR} z selektywnością 0,9, gdyż nie każdy odczyt EEG wymaga pełnej analizy koncentracji.
 Topologia obejmuje chmurę, serwer proxy, routery departamentowe oraz smartfony użytkowników. W strategii Cloud moduły, jak kalkulator stężenia i złącze trafiają do chmury, a klient pozostaje na urządzeniu mobilnym, za to w strategii Fog placement \texttt{ModulePlacementEdgewards} próbuje przesunąć obliczenia bliżej użytkownika. W forku dodaliśmy argumenty \texttt{--departments}, \texttt{--mobiles-per-dept} i \texttt{--cloud} oraz eksport wyników.
 
 \section{Eksperymenty}
@@ -178,7 +178,7 @@ W każdym scenariuszu porównaliśmy dwie strategie rozmieszczania modułów. Pi
 Jako miary jakości przyjęliśmy opóźnienie pętli (w DCNS osobno: detekcja i śledzenie oraz sterowanie PTZ), wykorzystanie sieci, energię całkowitą oraz koszt wykonania w chmurze. Dla CrowdSensing dodatkowo mierzyliśmy czas migracji mikroserwisów.
 
 \subsection{Zakres wariantów}
-Dla CrowdSensing uruchomiono 28 różnych liczb użytkowników (od 1 do 100) w obu strategiach, co dało 56 wierszy w pliku CSV. Dla DCNS przetestowano 42 konfiguracje obszarów i kamer, również w wersji Cloud i Fog, czyli 84 wiersze.
+Dla CrowdSensing uruchomiono 28 różnych liczb użytkowników (od 1 do 100) w obu strategiach, co dało 56 wierszy w pliku CSV. Dla DCNS przetestowano 42 konfiguracje obszarów i kamer, również w wersjach Cloud i Fog, czyli 84 wiersze.
 
 Własną aplikację uruchomiono w 14 konfiguracjach bram i sensorów w obu strategiach (28 wierszy przy selectivity 1,0, faza \texttt{env}) oraz ponownie w fazie \texttt{env-sparse} z \texttt{--anomaly-selectivity=0,1}, co dało łącznie 56 wierszy. Scenariusz VRGame obejmuje 14 konfiguracji departamentów i urządzeń mobilnych w wersji Cloud i Fog, czyli kolejne 28 wierszy danych.
 
